@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<krepo.seshcoders.messengerbubbles.BubbleLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:clipChildren="false">
+
+    <ImageView
+        android:id="@+id/avatar"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
+        android:layout_gravity="center"
+        android:background="@drawable/profile_decorator"
+        android:src="@drawable/profile"
+        android:scaleType="centerCrop"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@android:color/white"
+        android:textSize="14sp"
+        android:fontFamily="sans-serif-medium"
+        android:layout_marginTop="2dp"
+        android:layout_marginLeft="2dp"
+        android:paddingLeft="5dp"
+        android:paddingRight="5dp"
+        android:background="@drawable/bubble_counter_bkg"
+        android:text="1"/>
+
+</krepo.seshcoders.messengerbubbles.BubbleLayout>
