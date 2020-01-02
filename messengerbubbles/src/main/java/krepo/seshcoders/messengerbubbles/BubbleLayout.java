@@ -33,22 +33,33 @@ import android.os.Looper;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.view.Display;
+import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.view.WindowManager;
 
-public class BubbleLayout extends BubbleBaseLayout {
+public class BubbleLayout extends BubbleBaseLayout implements ViewTreeObserver.OnGlobalLayoutListener {
     private float initialTouchX;
     private float initialTouchY;
     private int initialX;
     private int initialY;
     private OnBubbleRemoveListener onBubbleRemoveListener;
     private OnBubbleClickListener onBubbleClickListener;
+    private OnBubbleStickToWallListener onBubbleStickToWallListener;
     private static final int TOUCH_TIME_THRESHOLD = 150;
     private long lastTouchDown;
     private MoveAnimator animator;
     private int width;
     private WindowManager windowManager;
     private boolean shouldStickToWall = true;
+    private MessCloudView.BubbleCurrentWall currentWall;
+
+    private MessCloudView cloudView;
+
+    private static final String TAG = "BubbleLayout";
 
     public void setOnBubbleRemoveListener(OnBubbleRemoveListener listener) {
         onBubbleRemoveListener = listener;
@@ -56,6 +67,10 @@ public class BubbleLayout extends BubbleBaseLayout {
 
     public void setOnBubbleClickListener(OnBubbleClickListener listener) {
         onBubbleClickListener = listener;
+    }
+
+    public void setOnBubbleStickToWallListener(OnBubbleStickToWallListener listener) {
+        onBubbleStickToWallListener = listener;
     }
 
     public BubbleLayout(Context context) {
@@ -90,18 +105,16 @@ public class BubbleLayout extends BubbleBaseLayout {
     }
 
     private void initializeView() {
-        setClickable(true);
+        this.getViewTreeObserver().addOnGlobalLayoutListener(this);
+        initializeCloudView();
     }
 
-    @Override
-    protected void onAttachedToWindow() {
-        super.onAttachedToWindow();
-        playAnimation();
-    }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         if (event != null) {
+            if (cloudView.getVisibility() == VISIBLE)
+                cloudView.setVisibility(GONE);
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
                     initialX = getViewParams().x;
@@ -114,8 +127,8 @@ public class BubbleLayout extends BubbleBaseLayout {
                     animator.stop();
                     break;
                 case MotionEvent.ACTION_MOVE:
-                    int x = initialX + (int)(event.getRawX() - initialTouchX);
-                    int y = initialY + (int)(event.getRawY() - initialTouchY);
+                    int x = initialX + (int) (event.getRawX() - initialTouchX);
+                    int y = initialY + (int) (event.getRawY() - initialTouchY);
                     getViewParams().x = x;
                     getViewParams().y = y;
                     getWindowManager().updateViewLayout(this, getViewParams());
@@ -140,6 +153,26 @@ public class BubbleLayout extends BubbleBaseLayout {
         return super.onTouchEvent(event);
     }
 
+    private void initializeCloudView() {
+        View rootView = LayoutInflater.from(getContext()).inflate(R.layout.layout_mess_cloud, null, false);
+        cloudView = rootView.findViewById(R.id.cloudView);
+        if (cloudView.getParent() != null) {
+            ((ViewGroup) cloudView.getParent()).removeView(cloudView);
+        }
+    }
+
+
+    private void addMessageCloud() {
+        LayoutParams p = new LayoutParams(
+                LayoutParams.WRAP_CONTENT,
+                LayoutParams.WRAP_CONTENT,
+                Gravity.CENTER_VERTICAL);
+        p.setMargins(this.getWidth() + (int) dpToPx(2, getContext()), 0, 0, 0);
+        cloudView.setLayoutParams(p);
+        this.addView(cloudView);
+        cloudView.setVisibility(VISIBLE);
+    }
+
     private void playAnimation() {
         if (!isInEditMode()) {
             AnimatorSet animator = (AnimatorSet) AnimatorInflater
@@ -149,10 +182,11 @@ public class BubbleLayout extends BubbleBaseLayout {
         }
     }
 
+
     private void playAnimationClickDown() {
         if (!isInEditMode()) {
             AnimatorSet animator = (AnimatorSet) AnimatorInflater
-                    .loadAnimator(getContext(), R.animator.bubble_down_click_animator);
+                    .loadAnimator(getContext(), R.animator.bubble_click_down_animator);
             animator.setTarget(this);
             animator.start();
         }
@@ -177,6 +211,13 @@ public class BubbleLayout extends BubbleBaseLayout {
 
     }
 
+    @Override
+    public void onGlobalLayout() {
+        //after drawing of users layout and getting its measurements
+        this.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+        addMessageCloud();
+    }
+
     public interface OnBubbleRemoveListener {
         void onBubbleRemoved(BubbleLayout bubble);
     }
@@ -185,14 +226,33 @@ public class BubbleLayout extends BubbleBaseLayout {
         void onBubbleClick(BubbleLayout bubble);
     }
 
-    public void goToWall() {
-        if(shouldStickToWall){
-            int middle = width / 2;
-            float nearestXWall = getViewParams().x >= middle
-                    ? width + getViewParams().width
-                    : 0 - getViewParams().width;
-            animator.start(nearestXWall, getViewParams().y);
+    public interface OnBubbleStickToWallListener {
+        void onBubbleStickToWall(MessCloudView.BubbleCurrentWall wall);
+    }
 
+    public void goToWall() {
+        if (shouldStickToWall) {
+            int middle = width / 2;
+            if (getViewParams().x >= middle) {
+                //right wall
+                currentWall = MessCloudView.BubbleCurrentWall.RIGHT;
+                animator.start(width + getViewParams().width, getViewParams().y);
+            } else {
+                //left wall
+                currentWall = MessCloudView.BubbleCurrentWall.LEFT;
+                animator.start(0 - getViewParams().width, getViewParams().y);
+            }
+            if (onBubbleStickToWallListener != null) {
+                onBubbleStickToWallListener.onBubbleStickToWall(currentWall);
+            }
+        }
+    }
+
+    public void displayMessage(String cloudMessage) {
+        if (cloudView != null) {
+            cloudView.setCloudMessage(cloudMessage);
+            if (cloudView.getVisibility() != VISIBLE)
+                cloudView.setVisibility(VISIBLE);
         }
     }
 
@@ -202,6 +262,9 @@ public class BubbleLayout extends BubbleBaseLayout {
         windowManager.updateViewLayout(this, getViewParams());
     }
 
+    private static float dpToPx(float dp, Context context) {
+        return dp * ((float) context.getResources().getDisplayMetrics().densityDpi / DisplayMetrics.DENSITY_DEFAULT);
+    }
 
     private class MoveAnimator implements Runnable {
         private Handler handler = new Handler(Looper.getMainLooper());
@@ -220,8 +283,8 @@ public class BubbleLayout extends BubbleBaseLayout {
         public void run() {
             if (getRootView() != null && getRootView().getParent() != null) {
                 float progress = Math.min(1, (System.currentTimeMillis() - startingTime) / 400f);
-                float deltaX = (destinationX -  getViewParams().x) * progress;
-                float deltaY = (destinationY -  getViewParams().y) * progress;
+                float deltaX = (destinationX - getViewParams().x) * progress;
+                float deltaY = (destinationY - getViewParams().y) * progress;
                 move(deltaX, deltaY);
                 if (progress < 1) {
                     handler.post(this);
@@ -231,6 +294,18 @@ public class BubbleLayout extends BubbleBaseLayout {
 
         private void stop() {
             handler.removeCallbacks(this);
+        }
+    }
+
+    static class BubblePojo {
+        int xPos;
+        int yPos;
+        BubbleLayout bubbleLayout;
+
+        BubblePojo(int xPos, int yPos, BubbleLayout bubbleLayout) {
+            this.bubbleLayout = bubbleLayout;
+            this.xPos = xPos;
+            this.yPos = yPos;
         }
     }
 }

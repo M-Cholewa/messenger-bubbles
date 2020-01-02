@@ -6,16 +6,5 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <krepo.seshcoders.bubblesexample.views.MessCloudView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginTop="20dp"
-        app:arrowSize="10dp"
-        app:cloudColor="@color/brand_red"
-        app:cloudHorizontalPadding="10dp"
-        app:cloudVerticalPadding="10dp"
-        android:layout_marginLeft="72dp"
-        app:cloudMessage="witaaaaaaaaaaaaaaaaaaa mikola nie istnieje"
-        />
 
 </RelativeLayout>

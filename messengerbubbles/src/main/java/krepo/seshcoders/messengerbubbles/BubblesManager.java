@@ -29,6 +29,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.IBinder;
+import android.util.Log;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static android.content.ContentValues.TAG;
 
 public class BubblesManager {
     private static BubblesManager INSTANCE;
@@ -37,6 +43,7 @@ public class BubblesManager {
     private BubblesService bubblesService;
     private int trashLayoutResourceId;
     private OnInitializedCallback listener;
+    private List<BubbleLayout.BubblePojo> pendingBubbles;
 
     private static BubblesManager getInstance(Context context) {
         if (INSTANCE == null) {
@@ -52,6 +59,12 @@ public class BubblesManager {
             BubblesManager.this.bubblesService = binder.getService();
             configureBubblesService();
             bounded = true;
+            for (BubbleLayout.BubblePojo bubblePojo : pendingBubbles){
+                bubblesService.addBubble(
+                        bubblePojo.bubbleLayout,
+                        bubblePojo.xPos,
+                        bubblePojo.yPos);
+            }
             if (listener != null) {
                 listener.onInitialized();
             }
@@ -65,6 +78,7 @@ public class BubblesManager {
 
     private BubblesManager(Context context) {
         this.context = context;
+        this.pendingBubbles = new ArrayList<>();
     }
 
     private void configureBubblesService() {
@@ -84,6 +98,9 @@ public class BubblesManager {
     public void addBubble(BubbleLayout bubble, int x, int y) {
         if (bounded) {
             bubblesService.addBubble(bubble, x, y);
+        } else {
+            //not bounded yet, adding to pending list...
+            pendingBubbles.add(new BubbleLayout.BubblePojo(x,y,bubble));
         }
     }
 
