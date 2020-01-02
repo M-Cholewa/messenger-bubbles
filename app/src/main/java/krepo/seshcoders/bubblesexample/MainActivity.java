@@ -8,9 +8,8 @@ import android.os.Bundle;
 import android.provider.Settings;
 import android.util.DisplayMetrics;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.LayoutInflater;
-import android.view.View;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -57,7 +56,6 @@ public class MainActivity extends AppCompatActivity {
             startActivityForResult(intent, PERMISSIONS_REQUEST_CODE);
         } else {
             initializeBubbles();
-//            ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
             new ScheduledThreadPoolExecutor(1).schedule(new Runnable() {
                 @Override
                 public void run() {
@@ -78,25 +76,27 @@ public class MainActivity extends AppCompatActivity {
         bubbleView = (BubbleLayout) LayoutInflater
                 .from(MainActivity.this).inflate(R.layout.component_bubble_layout, null, false);
         bubbleView.setShouldStickToWall(true);
-//        View rootView = LayoutInflater.from(this).inflate(R.layout.component_bubble_layout,null,true);
         messageBadge = bubbleView.findViewById(R.id.badge);
+        final RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) messageBadge.getLayoutParams();
+
         bubbleView.setOnBubbleStickToWallListener(new BubbleLayout.OnBubbleStickToWallListener() {
             @Override
             public void onBubbleStickToWall(MessCloudView.BubbleCurrentWall wall) {
-                Log.d(TAG, "onBubbleStickToWall: "+wall);
-                if (wall == MessCloudView.BubbleCurrentWall.LEFT){
-                    //messageBadge layout grevity right
-                    ((BubbleLayout.LayoutParams)messageBadge.getLayoutParams()).gravity = Gravity.END;
-
-
-                }else{
-                    //messageBadge layout grevity left
-                    ((BubbleLayout.LayoutParams)messageBadge.getLayoutParams()).gravity = Gravity.START;
-
+                Log.d(TAG, "onBubbleStickToWall: " + wall);
+                if (wall == MessCloudView.BubbleCurrentWall.LEFT) {
+                    //left wall, messageBadge layout grevity right
+                    params.removeRule(RelativeLayout.ALIGN_START);
+                    params.addRule(RelativeLayout.ALIGN_END, R.id.avatar);
+                    messageBadge.setLayoutParams(params);
+                } else {
+                    //right wall, messageBadge layout grevity left
+                    params.removeRule(RelativeLayout.ALIGN_END);
+                    params.addRule(RelativeLayout.ALIGN_START, R.id.avatar);
+                    messageBadge.setLayoutParams(params);
                 }
             }
         });
-        bubblesManager.addBubble(bubbleView, 0, getScreenWidth());
+        bubblesManager.addBubble(bubbleView, getScreenWidth(), getScreenHeight()/2);
     }
 
     @Override
@@ -112,13 +112,13 @@ public class MainActivity extends AppCompatActivity {
         Toast.makeText(mContext, "permissions changed", Toast.LENGTH_SHORT).show();
     }
 
-    private int getScreenWidth(){
+    private int getScreenWidth() {
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         return displayMetrics.widthPixels;
     }
 
-    private int getScreenHeight(){
+    private int getScreenHeight() {
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         return displayMetrics.heightPixels;

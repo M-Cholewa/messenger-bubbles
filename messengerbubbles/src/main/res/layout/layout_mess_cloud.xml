@@ -13,7 +13,7 @@
         android:visibility="gone"
         android:clickable="false"
         android:layout_gravity="center"
-        app:arrowSize="10dp"
+        app:arrowSize="7dp"
         app:cloudColor="#d51826"
         app:cloudHorizontalPadding="10dp"
         app:cloudMessage="SKRRR SKRRRRR COS SKRRRRp"
