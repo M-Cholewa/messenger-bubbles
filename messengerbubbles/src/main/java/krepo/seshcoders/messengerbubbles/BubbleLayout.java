@@ -111,6 +111,12 @@ public class BubbleLayout extends BubbleBaseLayout implements ViewTreeObserver.O
         }
     }
 
+    void notifyStickToWall(MessCloudView.BubbleCurrentWall currentWall){
+        if (onBubbleStickToWallListener != null) {
+            onBubbleStickToWallListener.onBubbleStickToWall(currentWall, this);
+        }
+    }
+
     private void initializeView() {
         this.getViewTreeObserver().addOnGlobalLayoutListener(this);
 //        initializeCloudView();
@@ -256,17 +262,14 @@ public class BubbleLayout extends BubbleBaseLayout implements ViewTreeObserver.O
 //                x = width + getViewParams().width * 2;
                 x = width + this.getWidth();
                 y = getViewParams().y;
-                animator.start(x, y, animationTime);
             } else {
                 //left wall
                 currentWall = LEFT;
                 x = 0 - getViewParams().width;
                 y = getViewParams().y;
-                animator.start(x, y, animationTime);
             }
-            if (onBubbleStickToWallListener != null) {
-                onBubbleStickToWallListener.onBubbleStickToWall(currentWall, this);
-            }
+            animator.start(x, y, animationTime);
+            notifyStickToWall(currentWall);
             if (onMainBubbleActionListener != null && getStackPosition() == 0) {
                 onMainBubbleActionListener.onMainBubbleStickToWall(x, y, currentWall);
             }
@@ -336,8 +339,6 @@ public class BubbleLayout extends BubbleBaseLayout implements ViewTreeObserver.O
         void stop() {
             handler.removeCallbacks(this);
         }
-
-
     }
 
     static class BubblePojo {

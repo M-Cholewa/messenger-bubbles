@@ -47,6 +47,11 @@ public class BubbleStack implements OnMainBubbleActionListener {
     public void onMainBubbleStickToWall(int x, int y, MessCloudView.BubbleCurrentWall wall) {
         shouldStickToWall = true;
         isStackInMotion = false;
+        for (int i = 0; i < bubbles.size(); i++) {
+            if (i == 0) continue;
+            BubbleLayout bubble = bubbles.get(i);
+            bubble.notifyStickToWall(wall);
+        }
         setXYPos(x, y);
     }
 

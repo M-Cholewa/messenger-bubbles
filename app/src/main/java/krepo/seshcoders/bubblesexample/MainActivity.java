@@ -1,5 +1,6 @@
 package krepo.seshcoders.bubblesexample;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -7,12 +8,8 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.util.DisplayMetrics;
-import android.util.Log;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.WindowManager;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -24,7 +21,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import krepo.seshcoders.bubblesexample.utils.Utils;
 import krepo.seshcoders.messengerbubbles.BubbleLayout;
 import krepo.seshcoders.messengerbubbles.BubbleStack;
 import krepo.seshcoders.messengerbubbles.BubblesManager;
@@ -40,8 +36,8 @@ public class MainActivity extends AppCompatActivity implements BubbleLayout.OnBu
 
     //consts
     private static final int PERMISSIONS_REQUEST_CODE = 1231;
-    private static final String TAG = "MainActivity";
-    BubbleLayout bubbleView2;
+//    BubbleLayout bubbleView2;
+
     //views, android objects
     private BubblesManager bubblesManager;
     private Context mContext;
@@ -80,12 +76,12 @@ public class MainActivity extends AppCompatActivity implements BubbleLayout.OnBu
         }
     }
 
-
+    @SuppressLint("InflateParams")
     private void initializeBubbles() {
         BubbleLayout bubbleView = (BubbleLayout) LayoutInflater
                 .from(MainActivity.this).inflate(R.layout.component_bubble_layout, null, false);
 
-        bubbleView2 = (BubbleLayout) LayoutInflater
+        BubbleLayout bubbleView2 = (BubbleLayout) LayoutInflater
                 .from(MainActivity.this).inflate(R.layout.component_bubble_layout, null, false);
 
         BubbleLayout bubbleView3 = (BubbleLayout) LayoutInflater
@@ -103,13 +99,14 @@ public class MainActivity extends AppCompatActivity implements BubbleLayout.OnBu
         bubbleView2.setElevation(100);
         bubbleView3.setElevation(100);
 
-        ((ImageView)bubbleView2.findViewById(R.id.avatar)).setImageResource(R.drawable.profile3);
-        ((ImageView)bubbleView3.findViewById(R.id.avatar)).setImageResource(R.drawable.xd222);
+        ((ImageView) bubbleView2.findViewById(R.id.avatar)).setImageResource(R.drawable.profile_blank);
+        ((ImageView) bubbleView3.findViewById(R.id.avatar)).setImageResource(R.drawable.profile_roxi);
 
         bubbleView.findViewById(R.id.badge).setVisibility(View.GONE);
         bubbleView2.findViewById(R.id.badge).setVisibility(View.GONE);
 
         stack.addBubble(bubbleView, bubbleView2, bubbleView3);
+
         bubblesManager.addBubbleStack(stack, getScreenWidth(), getScreenHeight() / 2);
 
 //        bubblesManager.addBubble(bubbleView, 0, getScreenHeight());
@@ -160,9 +157,7 @@ public class MainActivity extends AppCompatActivity implements BubbleLayout.OnBu
                     0,
                     0,
                     0);
-//            containerParams.setMarginEnd(0);
-//            containerParams.setMarginStart(-1* (bubble.getStackPosition()+1) * 10);
-            bubble.setX(bubble.getStackPosition()*7);
+            bubble.setX(bubble.getStackPosition() * 7);
             bubbleContainer.setLayoutParams(containerParams);
 
             params.removeRule(RelativeLayout.ALIGN_START);
@@ -176,7 +171,7 @@ public class MainActivity extends AppCompatActivity implements BubbleLayout.OnBu
                     -1 * (bubble.getStackPosition() + 1) * 15,
                     0);
             bubbleContainer.setLayoutParams(containerParams);
-            bubble.setX(bubble.getStackPosition()*7);
+            bubble.setX(bubble.getStackPosition() * 7);
 
             params.removeRule(RelativeLayout.ALIGN_END);
             params.addRule(RelativeLayout.ALIGN_START, R.id.avatar);

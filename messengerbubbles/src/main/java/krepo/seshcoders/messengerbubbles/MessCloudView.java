@@ -1,7 +1,6 @@
 package krepo.seshcoders.messengerbubbles;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
@@ -18,11 +17,16 @@ import android.view.animation.AnimationUtils;
 
 import androidx.annotation.Nullable;
 
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
 @SuppressWarnings({"SuspiciousNameCombination", "unused"})
 public class MessCloudView extends View {
 
     //consts
     private static final String TAG = "MessCloudView";
+    private static final long VISIBILITY_DURATION = 5000;
 
     //attribute vars
     private String cloudMessage = "";
@@ -40,6 +44,7 @@ public class MessCloudView extends View {
     private int fullMessHeight;
     private StringBuilder messageToDisplay;
     private boolean isInAnimation = false;
+    private ScheduledExecutorService executorService = Executors.newScheduledThreadPool(1);
 
     //view objects
     private Paint rectPaint;
@@ -235,13 +240,12 @@ public class MessCloudView extends View {
         setMeasuredDimension(getBoxWidth() + arrowHeight, getBoxHeight());
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         if (getVisibility() == GONE) return true;
-        switch (event.getAction()) {
-            case MotionEvent.ACTION_MOVE:
-                this.setVisibility(GONE);
-                break;
+        if (event.getAction() == MotionEvent.ACTION_MOVE) {
+            this.setVisibility(GONE);
         }
         return true;
     }
@@ -278,6 +282,12 @@ public class MessCloudView extends View {
 
             @Override
             public void onAnimationEnd(Animation animation) {
+                executorService.schedule(new Runnable() {
+                    @Override
+                    public void run() {
+                        MessCloudView.this.setVisibility(GONE);
+                    }
+                }, VISIBILITY_DURATION, TimeUnit.MILLISECONDS);
             }
 
             @Override
@@ -310,6 +320,7 @@ public class MessCloudView extends View {
     }
 
 
+    @SuppressLint("SwitchIntDef")
     @Override
     public void setVisibility(int visibility) {
         if (visibility != getVisibility()) {

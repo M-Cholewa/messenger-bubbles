@@ -23,7 +23,7 @@
                 android:layout_gravity="left"
                 android:background="@drawable/profile_decorator"
                 android:scaleType="centerCrop"
-                android:src="@drawable/profile" />
+                android:src="@drawable/profile_txus" />
 
             <TextView
                 android:id="@+id/badge"
