@@ -16,7 +16,6 @@
         app:arrowSize="7dp"
         app:cloudColor="#d51826"
         app:cloudHorizontalPadding="10dp"
-        app:cloudMessage="SKRRR SKRRRRR COS SKRRRRp"
         app:cloudVerticalPadding="10dp"
     />
 </LinearLayout>

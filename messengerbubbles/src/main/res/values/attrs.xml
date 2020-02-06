@@ -4,7 +4,12 @@
         <attr name="cloudColor" format="color"/>
         <attr name="arrowSize" format="dimension"/>
         <attr name="cloudMessage" format="string"/>
+        <attr name="currentWall" format="enum" >
+            <enum name="LEFT" value="0"/>
+            <enum name="RIGHT" value="1"/>
+        </attr>
         <attr name="cloudHorizontalPadding" format="dimension"/>
         <attr name="cloudVerticalPadding" format="dimension"/>
+        <attr name="cloudMessageColor" format="color"/>
     </declare-styleable>
 </resources>

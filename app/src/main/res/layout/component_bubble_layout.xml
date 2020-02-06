@@ -9,29 +9,37 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content">
 
-        <ImageView
-            android:id="@+id/avatar"
-            android:layout_width="70dp"
-            android:layout_height="70dp"
-            android:layout_gravity="left"
-            android:background="@drawable/profile_decorator"
-            android:scaleType="centerCrop"
-            android:src="@drawable/profile" />
-
-        <TextView
-            android:id="@+id/badge"
+        <RelativeLayout
+            android:id="@+id/bubbleContainer"
+            android:layout_marginLeft="-10dp"
+            android:layout_marginRight="-10dp"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="end"
-            android:background="@drawable/bubble_counter_bkg"
-            android:fontFamily="sans-serif-medium"
-            android:paddingLeft="5dp"
-            android:paddingRight="5dp"
-            android:text="1"
-            android:textColor="@android:color/white"
-            android:textSize="14sp"
-            android:layout_alignTop="@id/avatar" />
+            android:layout_height="wrap_content">
 
+            <ImageView
+                android:id="@+id/avatar"
+                android:layout_width="70dp"
+                android:layout_height="70dp"
+                android:layout_gravity="left"
+                android:background="@drawable/profile_decorator"
+                android:scaleType="centerCrop"
+                android:src="@drawable/profile" />
+
+            <TextView
+                android:id="@+id/badge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignTop="@id/avatar"
+                android:layout_gravity="end"
+                android:background="@drawable/bubble_counter_bkg"
+                android:fontFamily="sans-serif-medium"
+                android:paddingLeft="5dp"
+                android:paddingRight="5dp"
+                android:text="1"
+                android:textColor="@android:color/white"
+                android:textSize="14sp" />
+
+        </RelativeLayout>
     </RelativeLayout>
 
 </krepo.seshcoders.messengerbubbles.BubbleLayout>

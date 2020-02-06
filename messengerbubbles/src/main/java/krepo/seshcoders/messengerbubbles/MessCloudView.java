@@ -25,8 +25,9 @@ public class MessCloudView extends View {
     private static final String TAG = "MessCloudView";
 
     //attribute vars
-    private String cloudMessage;
-    private int cloudColor;
+    private String cloudMessage = "";
+    private int cloudColor = Color.BLUE;
+    private int cloudMessageColor = Color.WHITE;
     private int arrowHeight = 15;
     private int cloudVerticalPadding = 15;
     private int cloudHorizontalPadding = 15;
@@ -34,7 +35,7 @@ public class MessCloudView extends View {
 
     //vars
     private Context mContext;
-    private BubbleCurrentWall currentWall;
+    private BubbleCurrentWall currentWall = BubbleCurrentWall.LEFT;
     private int fullMessWidth;
     private int fullMessHeight;
     private StringBuilder messageToDisplay;
@@ -74,21 +75,22 @@ public class MessCloudView extends View {
         this.mContext = mContext;
         messageToDisplay = new StringBuilder();
 
-        messagePaint.setAntiAlias(true);
-        messagePaint.setColor(getColorRes(android.R.color.black));
-        messagePaint.setTextAlign(Paint.Align.LEFT);
-        messagePaint.setTextSize(40);
-
         if (set == null) return;
         TypedArray typedArray = getContext().obtainStyledAttributes(set, R.styleable.MessCloudView);
 
         cloudMessage = typedArray.getString(R.styleable.MessCloudView_cloudMessage);
-        cloudColor = typedArray.getColor(R.styleable.MessCloudView_cloudColor, Color.GREEN);
+        cloudColor = typedArray.getColor(R.styleable.MessCloudView_cloudColor, Color.BLUE);
+        cloudMessageColor = typedArray.getColor(R.styleable.MessCloudView_cloudMessageColor, Color.WHITE);
         arrowHeight = typedArray.getDimensionPixelSize(R.styleable.MessCloudView_arrowSize, 15);
         cloudVerticalPadding = typedArray.getDimensionPixelSize(R.styleable.MessCloudView_cloudVerticalPadding, 15);
         cloudHorizontalPadding = typedArray.getDimensionPixelSize(R.styleable.MessCloudView_cloudHorizontalPadding, 15);
 
         typedArray.recycle();
+
+        messagePaint.setAntiAlias(true);
+        messagePaint.setColor(cloudMessageColor);
+        messagePaint.setTextAlign(Paint.Align.LEFT);
+        messagePaint.setTextSize(40);
 
         //calculate the message body with message itself
         calculateMessageBody();
@@ -96,6 +98,8 @@ public class MessCloudView extends View {
 
     @Override
     protected void onDraw(Canvas canvas) {
+
+        // TODO: 05.02.2020 move this block upside, cuz of onDraw constant refreshing
         rectPaint.setColor(cloudColor);
         rectPaint.setStyle(Paint.Style.FILL);
         rectPaint.setAntiAlias(true);
@@ -112,15 +116,31 @@ public class MessCloudView extends View {
 
     //draw object methods
     private void drawRoundRect(Canvas canvas) {
+        if(currentWall == BubbleCurrentWall.LEFT){
+            //left sided cloud
+            canvas.drawRoundRect(arrowHeight, 0, getBoxWidth() + arrowHeight, getBoxHeight(), 10, 10, rectPaint);
+        }else {
+            //right sided cloud
+            canvas.drawRoundRect(0, 0, getBoxWidth(), getBoxHeight(), 10, 10, rectPaint);
+        }
 
-        canvas.drawRoundRect(arrowHeight, 0, getBoxWidth() + arrowHeight, getBoxHeight(), 10, 10, rectPaint);
     }
 
     private void drawArrow(Canvas canvas) {
-        arrowPath.moveTo(arrowHeight, getBoxHeight() / 2f - arrowHeight / 1.2f);
-        arrowPath.lineTo(0, getBoxHeight() / 2);
-        arrowPath.lineTo(arrowHeight, getBoxHeight() / 2f + arrowHeight / 1.2f);
-        arrowPath.close();
+        if (currentWall == BubbleCurrentWall.LEFT){
+            //left sided cloud
+            arrowPath.moveTo(arrowHeight, getBoxHeight() / 2f - arrowHeight / 1.2f);
+            arrowPath.lineTo(0, getBoxHeight() / 2);
+            arrowPath.lineTo(arrowHeight, getBoxHeight() / 2f + arrowHeight / 1.2f);
+            arrowPath.close();
+        } else{
+            //right sided cloud
+            arrowPath.moveTo(getBoxWidth(), getBoxHeight() / 2f - arrowHeight / 1.2f);
+            arrowPath.lineTo(getBoxWidth()+arrowHeight, getBoxHeight() / 2);
+            arrowPath.lineTo(getBoxWidth(), getBoxHeight() / 2f + arrowHeight / 1.2f);
+            arrowPath.close();
+        }
+
 
         canvas.drawPath(arrowPath, rectPaint);
     }
@@ -128,7 +148,9 @@ public class MessCloudView extends View {
     private void drawMessage(Canvas canvas) {
 
         int paddingY = cloudVerticalPadding;
-        int paddingX = cloudHorizontalPadding + arrowHeight;
+        int paddingX = currentWall == BubbleCurrentWall.LEFT
+                ? cloudHorizontalPadding + arrowHeight
+                : cloudHorizontalPadding;
 
         for (String line : messageToDisplay.toString().split("\n")) {
             messagePaint.getTextBounds(line, 0, line.length(), textRect);
@@ -145,6 +167,7 @@ public class MessCloudView extends View {
         messageToDisplay.setLength(0);
         fullMessHeight = 0;
         fullMessWidth = 0;
+        if (cloudMessage == null) return;
 
         for (String s : cloudMessage.split("\\s+")) {
 
@@ -280,7 +303,10 @@ public class MessCloudView extends View {
     }
 
     public void setCurrentWall(BubbleCurrentWall currentWall) {
-        this.currentWall = currentWall;
+        if(this.currentWall != currentWall){
+            this.currentWall = currentWall;
+            postInvalidate();
+        }
     }
 
 

@@ -33,6 +33,7 @@ class BubbleBaseLayout extends FrameLayout {
     private WindowManager windowManager;
     private WindowManager.LayoutParams params;
     private BubblesLayoutCoordinator layoutCoordinator;
+    private int stackPosition = 0;
 
     void setLayoutCoordinator(BubblesLayoutCoordinator layoutCoordinator) {
         this.layoutCoordinator = layoutCoordinator;
@@ -50,11 +51,11 @@ class BubbleBaseLayout extends FrameLayout {
         return this.windowManager;
     }
 
-    void setViewParams(WindowManager.LayoutParams params) {
+    public void setViewParams(WindowManager.LayoutParams params) {
         this.params = params;
     }
 
-    WindowManager.LayoutParams getViewParams() {
+    public WindowManager.LayoutParams getViewParams() {
         return this.params;
     }
 
@@ -68,5 +69,13 @@ class BubbleBaseLayout extends FrameLayout {
 
     public BubbleBaseLayout(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
+    }
+
+    public int getStackPosition() {
+        return stackPosition;
+    }
+
+    public void setStackPosition(int stackPosition) {
+        this.stackPosition = stackPosition;
     }
 }

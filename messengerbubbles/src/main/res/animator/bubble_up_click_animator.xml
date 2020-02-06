@@ -31,7 +31,7 @@ android:ordering="together">
     android:interpolator="@android:interpolator/overshoot"
     android:propertyName="scaleX"
     android:valueType="floatType"
-    android:valueFrom="0.9f"
+    android:valueFrom="0.95f"
     android:valueTo="1.0f" />
 
 <objectAnimator
@@ -39,7 +39,7 @@ android:ordering="together">
     android:interpolator="@android:interpolator/overshoot"
     android:propertyName="scaleY"
     android:valueType="floatType"
-    android:valueFrom="0.9f"
+    android:valueFrom="0.95f"
     android:valueTo="1.0f" />
 
 </set>
