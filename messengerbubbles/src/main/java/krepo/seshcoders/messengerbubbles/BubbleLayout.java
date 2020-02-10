@@ -32,10 +32,12 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.Display;
 import android.view.MotionEvent;
 import android.view.ViewTreeObserver;
 import android.view.WindowManager;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 
@@ -58,9 +60,8 @@ public class BubbleLayout extends BubbleBaseLayout implements ViewTreeObserver.O
     private WindowManager windowManager;
     private boolean shouldStickToWall = true;
     private MessCloudView.BubbleCurrentWall currentWall;
-//    private boolean isInMotion = false;
-
-//    private MessCloudView cloudView;
+    private boolean isInMotion = false;
+    private MessCloudView cloudView;
 
     private static final String TAG = "BubbleLayout";
 
@@ -101,17 +102,13 @@ public class BubbleLayout extends BubbleBaseLayout implements ViewTreeObserver.O
         initializeView();
     }
 
-    public void setShouldStickToWall(boolean shouldStick) {
-        this.shouldStickToWall = shouldStick;
-    }
-
     void notifyBubbleRemoved() {
         if (onBubbleRemoveListener != null) {
             onBubbleRemoveListener.onBubbleRemoved(this);
         }
     }
 
-    void notifyStickToWall(MessCloudView.BubbleCurrentWall currentWall){
+    void notifyStickToWall(MessCloudView.BubbleCurrentWall currentWall) {
         if (onBubbleStickToWallListener != null) {
             onBubbleStickToWallListener.onBubbleStickToWall(currentWall, this);
         }
@@ -128,8 +125,8 @@ public class BubbleLayout extends BubbleBaseLayout implements ViewTreeObserver.O
 //        getWindowManager().removeView(this);
 //        getWindowManager().addView(this, getLayoutParams());
         if (event != null && getStackPosition() == 0) {
-//            if (cloudView != null && cloudView.getVisibility() == VISIBLE)
-//                cloudView.setVisibility(GONE);
+            if (cloudView != null && cloudView.getVisibility() == VISIBLE)
+                cloudView.setVisibility(GONE);
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
                     initialX = getViewParams().x;
@@ -147,6 +144,7 @@ public class BubbleLayout extends BubbleBaseLayout implements ViewTreeObserver.O
                     getViewParams().x = x;
                     getViewParams().y = y;
                     getWindowManager().updateViewLayout(this, getViewParams());
+                    isInMotion = true;
                     if (onMainBubbleActionListener != null) {
                         onMainBubbleActionListener.onMainBubbleMove(x, y, 0);
                     }
@@ -158,7 +156,7 @@ public class BubbleLayout extends BubbleBaseLayout implements ViewTreeObserver.O
                     goToWall(null, 400f);
                     if (onMainBubbleActionListener != null) {
                     }
-//                    isInMotion = false;
+                    isInMotion = false;
                     if (getLayoutCoordinator() != null) {
                         getLayoutCoordinator().notifyBubbleRelease(this);
                         playAnimationClickUp();
@@ -230,7 +228,6 @@ public class BubbleLayout extends BubbleBaseLayout implements ViewTreeObserver.O
         display.getSize(size);
         width = (size.x - this.getWidth());
     }
-
     @Override
     public void onGlobalLayout() {
         //after drawing of users layout and getting its measurements
@@ -260,7 +257,8 @@ public class BubbleLayout extends BubbleBaseLayout implements ViewTreeObserver.O
                 //right wall
                 currentWall = RIGHT;
 //                x = width + getViewParams().width * 2;
-                x = width + this.getWidth();
+//                x = width + this.getWidth();
+                x = width;
                 y = getViewParams().y;
             } else {
                 //left wall
@@ -273,19 +271,42 @@ public class BubbleLayout extends BubbleBaseLayout implements ViewTreeObserver.O
             if (onMainBubbleActionListener != null && getStackPosition() == 0) {
                 onMainBubbleActionListener.onMainBubbleStickToWall(x, y, currentWall);
             }
+            isInMotion = false;
         }
     }
 
-//    public void displayMessage(String cloudMessage) {
-//        if (cloudView != null && !isInMotion) {
-//            if (currentWall!=null)
-//            cloudView.setCurrentWall(currentWall);
-//            cloudView.setCloudMessage(cloudMessage);
-//            if (cloudView.getVisibility() != VISIBLE)
-//                cloudView.setVisibility(VISIBLE);
-//        }
+    public void displayMessage(String cloudMessage) {
+        if (cloudView != null && !isInMotion && currentWall != null) {
+            cloudView.setCurrentWall(currentWall);
+            int x;
+            if (currentWall == LEFT) {
+                x = this.getViewParams().x + this.getWidth() + 15;
+            } else {
+                x = this.getViewParams().x
+                        - cloudView.getFullWidth() - 15 - this.getWidth()/2;
+            }
 
-    //    }
+//            int x = width - (this.getWidth() + cloudView.getWidth());
+            cloudView.setCloudMessage(cloudMessage);
+//            int y = getViewParams().y;
+            int y = (getViewParams().y + this.getHeight() / 2) - cloudView.getFullHeight() / 2;
+//            Log.d(TAG, "displayMessage: height" + cloudView.getFullHeight() + " width " + cloudView.getFullWidth());
+            cloudView.move(x, y);
+            if (cloudView.getVisibility() != VISIBLE)
+                cloudView.setVisibility(VISIBLE);
+//            Toast.makeText(getContext(), "shown", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+
+    public void setShouldStickToWall(boolean shouldStick) {
+        this.shouldStickToWall = shouldStick;
+    }
+
+    public void setCloudView(MessCloudView cloudView) {
+        this.cloudView = cloudView;
+    }
+
     public MessCloudView.BubbleCurrentWall getCurrentWall() {
         return currentWall;
     }
@@ -298,6 +319,7 @@ public class BubbleLayout extends BubbleBaseLayout implements ViewTreeObserver.O
         getViewParams().x += deltaX;
         getViewParams().y += deltaY;
         windowManager.updateViewLayout(this, getViewParams());
+        isInMotion = true;
 
     }
 
@@ -329,6 +351,7 @@ public class BubbleLayout extends BubbleBaseLayout implements ViewTreeObserver.O
                 if (progress < 1) {
                     handler.post(this);
                 } else {
+                    isInMotion = false;
                     if (onMainBubbleActionListener != null && getStackPosition() == 0) {
                         onMainBubbleActionListener.onMainBubbleAnimationFinish();
                     }

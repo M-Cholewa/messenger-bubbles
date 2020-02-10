@@ -1,11 +1,7 @@
 package krepo.seshcoders.messengerbubbles;
 
-import android.util.Log;
-
 import java.util.ArrayList;
 import java.util.List;
-
-import static android.content.ContentValues.TAG;
 
 public class BubbleStack implements OnMainBubbleActionListener {
 
@@ -91,8 +87,8 @@ public class BubbleStack implements OnMainBubbleActionListener {
             
             if (animTime == 0f) {
                 followAnimTime = bubbleLayout.getStackPosition() == 1
-                    ? 10f
-                    : 20f;
+                    ? 40f
+                    : 60f;
             } else {
                 followAnimTime =
                         animTime*1.25f + (animTime *

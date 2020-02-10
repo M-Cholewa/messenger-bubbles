@@ -5,5 +5,9 @@
     <color name="colorAccent">#D81B60</color>
 
     <color name="brand_red">#d51826</color>
+    <color name="red">#ff0000</color>
+
+    <!--messenger colors-->
+    <color name="badge_red">#F43D32</color>
 
 </resources>

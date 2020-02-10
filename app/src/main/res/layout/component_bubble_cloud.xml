@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<krepo.seshcoders.messengerbubbles.BubbleLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:layout_width="match_parent"
@@ -10,12 +10,15 @@
         android:id="@+id/cloudView"
         android:focusable="false"
         android:longClickable="false"
-        android:visibility="gone"
+        android:visibility="visible"
         android:clickable="false"
         android:layout_gravity="center"
+        app:cloudMessage="A$AAAAAAAAP"
         app:arrowSize="7dp"
-        app:cloudColor="#d51826"
+        app:cloudMaxWidth="350dp"
+        app:cloudColor="@android:color/black"
+        app:cloudMessageColor="@color/red"
         app:cloudHorizontalPadding="10dp"
         app:cloudVerticalPadding="10dp"
-    />
-</LinearLayout>
+        />
+</krepo.seshcoders.messengerbubbles.BubbleLayout>

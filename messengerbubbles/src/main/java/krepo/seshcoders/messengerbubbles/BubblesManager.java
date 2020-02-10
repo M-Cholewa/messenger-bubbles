@@ -36,9 +36,10 @@ import java.util.List;
 public class BubblesManager {
     private static BubblesManager INSTANCE;
     private Context context;
-    private boolean bounded;
+    private boolean bound;
     private BubblesService bubblesService;
     private int trashLayoutResourceId;
+    private MessCloudView messageCloud;
     private OnInitializedCallback listener;
     private List<BubbleLayout.BubblePojo> pendingBubbles;
 
@@ -55,7 +56,7 @@ public class BubblesManager {
             BubblesService.BubblesServiceBinder binder = (BubblesService.BubblesServiceBinder) service;
             BubblesManager.this.bubblesService = binder.getService();
             configureBubblesService();
-            bounded = true;
+            bound = true;
             for (BubbleLayout.BubblePojo bubblePojo : pendingBubbles) {
                 if (bubblePojo.bubbleObject instanceof BubbleLayout) {
                     bubblesService.addBubble(
@@ -79,7 +80,7 @@ public class BubblesManager {
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
-            bounded = false;
+            bound = false;
         }
     };
 
@@ -90,6 +91,7 @@ public class BubblesManager {
 
     private void configureBubblesService() {
         bubblesService.addTrash(trashLayoutResourceId);
+        bubblesService.addMessCloud(messageCloud);
     }
 
     public void initialize() {
@@ -103,7 +105,7 @@ public class BubblesManager {
     }
 
     public void addBubble(BubbleLayout bubble, int x, int y) {
-        if (bounded) {
+        if (bound) {
             bubblesService.addBubble(bubble, x, y);
         } else {
             //not bound yet, adding to pending list...
@@ -112,7 +114,7 @@ public class BubblesManager {
     }
 
     public void addBubbleStack(BubbleStack stack, int x, int y) {
-        if (bounded) {
+        if (bound) {
             stack.setBubblesService(bubblesService);
             stack.setXYPos(x, y);
             stack.initialiseStack();
@@ -123,7 +125,7 @@ public class BubblesManager {
     }
 
     public void removeBubble(BubbleLayout bubble) {
-        if (bounded) {
+        if (bound) {
             bubblesService.removeBubble(bubble);
         }
     }
@@ -142,6 +144,11 @@ public class BubblesManager {
 
         public Builder setTrashLayout(int trashLayoutResourceId) {
             bubblesManager.trashLayoutResourceId = trashLayoutResourceId;
+            return this;
+        }
+
+        public Builder setMessageCloud(MessCloudView messageCloud){
+            bubblesManager.messageCloud = messageCloud;
             return this;
         }
 

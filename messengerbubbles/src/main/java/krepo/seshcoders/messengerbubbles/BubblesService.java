@@ -32,13 +32,19 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.FrameLayout;
+import android.widget.RelativeLayout;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static android.content.ContentValues.TAG;
 
 public class BubblesService extends Service {
     private BubblesServiceBinder binder = new BubblesServiceBinder();
@@ -46,6 +52,7 @@ public class BubblesService extends Service {
     private BubbleTrashLayout bubblesTrash;
     private WindowManager windowManager;
     private BubblesLayoutCoordinator layoutCoordinator;
+    private MessCloudView messageCloud;
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -89,6 +96,7 @@ public class BubblesService extends Service {
         bubble.setWindowManager(getWindowManager());
         bubble.setViewParams(layoutParams);
         bubble.setLayoutCoordinator(layoutCoordinator);
+        bubble.setCloudView(messageCloud);
         bubbles.add(bubble);
         addViewToWindow(bubble);
     }
@@ -104,6 +112,21 @@ public class BubblesService extends Service {
             initializeLayoutCoordinator();
         }
     }
+    void addMessCloud(MessCloudView cloudView){
+        if (cloudView!=null){
+            cloudView.forceHide();
+            if (cloudView.getParent()!=null){
+                ViewGroup viewGroup = (ViewGroup)cloudView.getParent();
+                viewGroup.removeView(cloudView);
+            }
+            this.messageCloud = cloudView;
+            FrameLayout frameLayout = new FrameLayout(getApplicationContext());
+            frameLayout.addView(messageCloud);
+            addViewToWindow(frameLayout);
+        }else {
+            Log.d(TAG, "addMessCloud: CLOUDVIEW NULL");
+        }
+    }
 
     private void initializeLayoutCoordinator() {
         layoutCoordinator = new BubblesLayoutCoordinator.Builder(this)
@@ -112,13 +135,31 @@ public class BubblesService extends Service {
                 .build();
     }
 
-    private void addViewToWindow(final BubbleBaseLayout view) {
+    private void addViewToWindow(final View view) {
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
-                getWindowManager().addView(view, view.getViewParams());
+                if (view instanceof BubbleBaseLayout){
+                    getWindowManager().addView(view, ((BubbleBaseLayout)view).getViewParams());
+                }else {
+                    getWindowManager().addView(view, buildLayoutParamsForMess(50,150));
+                }
             }
         });
+    }
+
+    private WindowManager.LayoutParams buildLayoutParamsForMess(int x, int y) {
+
+        WindowManager.LayoutParams params = new WindowManager.LayoutParams(
+                WindowManager.LayoutParams.WRAP_CONTENT,
+                WindowManager.LayoutParams.WRAP_CONTENT,
+                WindowManager.LayoutParams.TYPE_SYSTEM_ALERT,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+                PixelFormat.TRANSLUCENT);
+        params.gravity = Gravity.TOP | Gravity.START ;
+        params.x = x;
+        params.y = y;
+        return params;
     }
 
     private WindowManager.LayoutParams buildLayoutParamsForBubble(int x, int y) {
@@ -126,7 +167,7 @@ public class BubblesService extends Service {
         WindowManager.LayoutParams params = new WindowManager.LayoutParams(
                 WindowManager.LayoutParams.WRAP_CONTENT,
                 WindowManager.LayoutParams.WRAP_CONTENT,
-                WindowManager.LayoutParams.TYPE_SYSTEM_ERROR,
+                WindowManager.LayoutParams.TYPE_SYSTEM_ALERT,
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
                 PixelFormat.TRANSLUCENT);
         params.gravity = Gravity.TOP | Gravity.START ;

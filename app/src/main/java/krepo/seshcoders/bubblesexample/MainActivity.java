@@ -6,10 +6,14 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.provider.Settings;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -28,6 +32,7 @@ import krepo.seshcoders.messengerbubbles.MessCloudView;
 
 import static krepo.seshcoders.messengerbubbles.MessCloudView.BubbleCurrentWall.LEFT;
 
+@SuppressLint("InflateParams")
 public class MainActivity extends AppCompatActivity implements BubbleLayout.OnBubbleStickToWallListener {
     // TODO: 02.01.2020 stick to wall with cloud view bubble stays in the middle
     // TODO: 02.01.2020 margin when out of screen boundaries
@@ -40,8 +45,9 @@ public class MainActivity extends AppCompatActivity implements BubbleLayout.OnBu
 
     //views, android objects
     private BubblesManager bubblesManager;
-    private Context mContext;
     private BubbleStack stack = new BubbleStack();
+    private Context mContext;
+    private BubbleLayout bubbleView3;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,9 +55,23 @@ public class MainActivity extends AppCompatActivity implements BubbleLayout.OnBu
         setContentView(R.layout.activity_main);
         mContext = getApplicationContext();
 
+//        final MessCloudView mcv = findViewById(R.id.cloudView);
+
+       final MessCloudView messCloudView = LayoutInflater
+                .from(MainActivity.this)
+                .inflate(R.layout.component_bubble_cloud, null, false)
+                .findViewById(R.id.cloudView);
+//        if (messCloudView.getParent()!=null){
+//            ViewGroup viewGroup = (ViewGroup)messCloudView.getParent();
+//            viewGroup.removeView(messCloudView);
+//        }
+//        this.addContentView(messCloudView, messCloudView.getLayoutParams());
+//        messCloudView.setCurrentWall(LEFT);
+//        messCloudView.setCloudMessage("witaaaaaaaaaaaaaaaaaaa mikola nie istnieje",50 ,150);
 
         bubblesManager = new BubblesManager.Builder(mContext)
                 .setTrashLayout(R.layout.component_bubble_trash_layout)
+                .setMessageCloud(messCloudView)
                 .build();
         bubblesManager.initialize();
 
@@ -61,22 +81,34 @@ public class MainActivity extends AppCompatActivity implements BubbleLayout.OnBu
             startActivityForResult(intent, PERMISSIONS_REQUEST_CODE);
         } else {
             initializeBubbles();
-            new ScheduledThreadPoolExecutor(1).schedule(new Runnable() {
+            new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-//                            bubbleView.displayMessage("witaaaaaaaaaaaaaaaaaaa mikola nie istnieje");
+//                    bubbleView3.displayMessage("białorycerz: witaaaaaa on mi kota orzygal mikola nie istnieje");
+                    bubbleView3.displayMessage("białorycerz: ciosaj mongoła kocmołuchu");
+//                    bubbleView3.displayMessage("białorycerz: witaaaaaa");
+//                    bubbleView3.displayMessage("Mufinka Michał: Wyślij pocztą walentynkową");
 
-                        }
-                    });
                 }
-            }, 8, TimeUnit.SECONDS);
+            }, 3000);
+
+//            new ScheduledThreadPoolExecutor(1).schedule(new Runnable() {
+//                @Override
+//                public void run() {
+//                    runOnUiThread(new Runnable() {
+//                        @Override
+//                        public void run() {
+////                            Handler h = Looper()
+////                            bubbleView.displayMessage("witaaaaaaaaaaaaaaaaaaa mikola nie istnieje");
+////                            mcv.setVisibility(View.VISIBLE);
+//
+//                        }
+//                    });
+//                }
+//            }, 3, TimeUnit.SECONDS);
         }
     }
 
-    @SuppressLint("InflateParams")
     private void initializeBubbles() {
         BubbleLayout bubbleView = (BubbleLayout) LayoutInflater
                 .from(MainActivity.this).inflate(R.layout.component_bubble_layout, null, false);
@@ -84,7 +116,7 @@ public class MainActivity extends AppCompatActivity implements BubbleLayout.OnBu
         BubbleLayout bubbleView2 = (BubbleLayout) LayoutInflater
                 .from(MainActivity.this).inflate(R.layout.component_bubble_layout, null, false);
 
-        BubbleLayout bubbleView3 = (BubbleLayout) LayoutInflater
+        bubbleView3 = (BubbleLayout) LayoutInflater
                 .from(MainActivity.this).inflate(R.layout.component_bubble_layout, null, false);
 
         bubbleView.setShouldStickToWall(true);
