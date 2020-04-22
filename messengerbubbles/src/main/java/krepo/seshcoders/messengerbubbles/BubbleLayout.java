@@ -37,7 +37,6 @@ import android.view.Display;
 import android.view.MotionEvent;
 import android.view.ViewTreeObserver;
 import android.view.WindowManager;
-import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 
@@ -127,6 +126,14 @@ public class BubbleLayout extends BubbleBaseLayout implements ViewTreeObserver.O
         if (event != null && getStackPosition() == 0) {
             if (cloudView != null && cloudView.getVisibility() == VISIBLE)
                 cloudView.setVisibility(GONE);
+//            ScheduledExecutorService executorService = new ScheduledThreadPoolExecutor(1);
+//            executorService.scheduleAtFixedRate(new Runnable() {
+//                @Override
+//                public void run() {
+//
+//                }
+//            },0,200, TimeUnit.MILLISECONDS);
+//            executorService.
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
                     initialX = getViewParams().x;
@@ -228,6 +235,7 @@ public class BubbleLayout extends BubbleBaseLayout implements ViewTreeObserver.O
         display.getSize(size);
         width = (size.x - this.getWidth());
     }
+
     @Override
     public void onGlobalLayout() {
         //after drawing of users layout and getting its measurements
@@ -256,9 +264,9 @@ public class BubbleLayout extends BubbleBaseLayout implements ViewTreeObserver.O
             if (wall == RIGHT || getViewParams().x >= middle) {
                 //right wall
                 currentWall = RIGHT;
-//                x = width + getViewParams().width * 2;
+                x = width + getViewParams().width * 2;
 //                x = width + this.getWidth();
-                x = width;
+//                x = width;
                 y = getViewParams().y;
             } else {
                 //left wall
@@ -275,19 +283,18 @@ public class BubbleLayout extends BubbleBaseLayout implements ViewTreeObserver.O
         }
     }
 
-    public void displayMessage(String cloudMessage) {
+    public void displayMessage(String cloudMessage, String messageAuthor) {
         if (cloudView != null && !isInMotion && currentWall != null) {
             cloudView.setCurrentWall(currentWall);
+            cloudView.setCloudMessage(cloudMessage,messageAuthor);
             int x;
             if (currentWall == LEFT) {
                 x = this.getViewParams().x + this.getWidth() + 15;
             } else {
-                x = this.getViewParams().x
-                        - cloudView.getFullWidth() - 15 - this.getWidth()/2;
+                x = getViewParams().x - cloudView.getFullWidth() - 15;
             }
 
 //            int x = width - (this.getWidth() + cloudView.getWidth());
-            cloudView.setCloudMessage(cloudMessage);
 //            int y = getViewParams().y;
             int y = (getViewParams().y + this.getHeight() / 2) - cloudView.getFullHeight() / 2;
 //            Log.d(TAG, "displayMessage: height" + cloudView.getFullHeight() + " width " + cloudView.getFullWidth());
@@ -322,6 +329,34 @@ public class BubbleLayout extends BubbleBaseLayout implements ViewTreeObserver.O
         isInMotion = true;
 
     }
+
+//    class FollowMoveAnimator implements Runnable {
+//
+//        private int destinationY;
+//        private int destinationX;
+//        private float animationTime;
+//        private ExecutorService service = Executors.newSingleThreadExecutor();
+//
+//        public synchronized void queueMove(int destinationX, int destinationY, float animationTime) {
+//            this.destinationX = destinationX;
+//            this.destinationY = destinationY;
+//            service.submit(this);
+//        }
+//
+//        @Override
+//        public void run() {
+//            if (getRootView() != null && getRootView().getParent() != null) {
+//                float progress = 0;
+//                long startingTime = System.currentTimeMillis();
+//                while (progress < 1) {
+//                    progress = Math.min(1, (System.currentTimeMillis() - startingTime) / animationTime);
+//                    float deltaX = (destinationX - getViewParams().x) * progress;
+//                    float deltaY = (destinationY - getViewParams().y) * progress;
+//                    move(deltaX, deltaY);
+//                }
+//            }
+//        }
+//    }
 
     class MoveAnimator implements Runnable {
         private Handler handler = new Handler(Looper.getMainLooper());

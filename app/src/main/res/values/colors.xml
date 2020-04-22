@@ -9,5 +9,7 @@
 
     <!--messenger colors-->
     <color name="badge_red">#F43D32</color>
+    <color name="cloud_message_blue">#0884f8</color>
+    <color name="message_gray">#333333</color>
 
 </resources>

@@ -3,6 +3,7 @@ package krepo.seshcoders.bubblesexample;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Outline;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -14,6 +15,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewOutlineProvider;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -25,6 +27,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import krepo.seshcoders.bubblesexample.utils.Utils;
 import krepo.seshcoders.messengerbubbles.BubbleLayout;
 import krepo.seshcoders.messengerbubbles.BubbleStack;
 import krepo.seshcoders.messengerbubbles.BubblesManager;
@@ -34,10 +37,8 @@ import static krepo.seshcoders.messengerbubbles.MessCloudView.BubbleCurrentWall.
 
 @SuppressLint("InflateParams")
 public class MainActivity extends AppCompatActivity implements BubbleLayout.OnBubbleStickToWallListener {
-    // TODO: 02.01.2020 stick to wall with cloud view bubble stays in the middle
-    // TODO: 02.01.2020 margin when out of screen boundaries
     // TODO: 02.01.2020 foreground service instead of this one
-
+    // TODO: 22.04.2020 after some time cloud doesnt want to dissapear, doesnt react to anything, doesnt change visibility
 
     //consts
     private static final int PERMISSIONS_REQUEST_CODE = 1231;
@@ -85,10 +86,9 @@ public class MainActivity extends AppCompatActivity implements BubbleLayout.OnBu
                 @Override
                 public void run() {
 //                    bubbleView3.displayMessage("białorycerz: witaaaaaa on mi kota orzygal mikola nie istnieje");
-                    bubbleView3.displayMessage("białorycerz: ciosaj mongoła kocmołuchu");
+                    bubbleView3.displayMessage("26-300 dobzl ludzie","200iq");
 //                    bubbleView3.displayMessage("białorycerz: witaaaaaa");
 //                    bubbleView3.displayMessage("Mufinka Michał: Wyślij pocztą walentynkową");
-
                 }
             }, 3000);
 
@@ -119,9 +119,9 @@ public class MainActivity extends AppCompatActivity implements BubbleLayout.OnBu
         bubbleView3 = (BubbleLayout) LayoutInflater
                 .from(MainActivity.this).inflate(R.layout.component_bubble_layout, null, false);
 
-        bubbleView.setShouldStickToWall(true);
-        bubbleView2.setShouldStickToWall(true);
-        bubbleView3.setShouldStickToWall(true);
+//        bubbleView.setShouldStickToWall(true);
+//        bubbleView2.setShouldStickToWall(true);
+//        bubbleView3.setShouldStickToWall(true);
 
         bubbleView.setOnBubbleStickToWallListener(this);
         bubbleView2.setOnBubbleStickToWallListener(this);
@@ -133,13 +133,23 @@ public class MainActivity extends AppCompatActivity implements BubbleLayout.OnBu
 
         ((ImageView) bubbleView2.findViewById(R.id.avatar)).setImageResource(R.drawable.profile_blank);
         ((ImageView) bubbleView3.findViewById(R.id.avatar)).setImageResource(R.drawable.profile_roxi);
+//        ((ImageView) bubbleView3.findViewById(R.id.avatar)).setOutlineProvider(new ViewOutlineProvider() {
+//            @Override
+//            public void getOutline(View view, Outline outline) {
+//                outline.setOval(view.getLeft(),view.getTop(),view.getRight(),view.getBottom());
+////                view.setClipToOutline(true);
+//            }
+//        });
+
 
         bubbleView.findViewById(R.id.badge).setVisibility(View.GONE);
         bubbleView2.findViewById(R.id.badge).setVisibility(View.GONE);
 
-        stack.addBubble(bubbleView, bubbleView2, bubbleView3);
+        stack.addBubble(
+                bubbleView, bubbleView2,
+                bubbleView3);
 
-        bubblesManager.addBubbleStack(stack, getScreenWidth(), getScreenHeight() / 2);
+        bubblesManager.addBubbleStack(stack, getScreenWidth(), getScreenHeight() / 2- 350);
 
 //        bubblesManager.addBubble(bubbleView, 0, getScreenHeight());
 //        bubblesManager.addBubble(bubbleView2, 0, getScreenHeight()/2);

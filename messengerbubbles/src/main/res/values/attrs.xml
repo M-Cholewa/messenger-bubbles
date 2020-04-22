@@ -4,6 +4,7 @@
         <attr name="cloudColor" format="color"/>
         <attr name="arrowSize" format="dimension"/>
         <attr name="cloudMessage" format="string"/>
+        <attr name="messageAuthor" format="string"/>
         <attr name="currentWall" format="enum" >
             <enum name="LEFT" value="0"/>
             <enum name="RIGHT" value="1"/>

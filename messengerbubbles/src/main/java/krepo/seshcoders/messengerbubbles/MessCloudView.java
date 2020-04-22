@@ -7,15 +7,12 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
-import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.text.Layout;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.StaticLayout;
 import android.text.TextPaint;
-import android.text.style.BackgroundColorSpan;
-import android.text.style.ForegroundColorSpan;
 import android.text.style.StyleSpan;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -28,9 +25,6 @@ import android.widget.FrameLayout;
 
 import androidx.annotation.Nullable;
 
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-
 import static android.content.Context.WINDOW_SERVICE;
 
 @SuppressWarnings({"SuspiciousNameCombination", "unused"})
@@ -38,10 +32,12 @@ public class MessCloudView extends View {
 
     //consts
     private static final String TAG = "MessCloudView";
+    private static final float SHADOW_RADIUS = 3;
     private static final long VISIBILITY_DURATION = 15000;
 
     //attribute vars
     private String cloudMessage = "";
+    private String messageAuthor = "";
     private int cloudColor = Color.BLUE;
     private int cloudMessageColor = Color.WHITE;
     private int arrowHeight = 15;
@@ -51,7 +47,7 @@ public class MessCloudView extends View {
 
     //vars
     private Context mContext;
-    private BubbleCurrentWall currentWall = BubbleCurrentWall.RIGHT;
+    private BubbleCurrentWall currentWall = BubbleCurrentWall.LEFT;
     private int fullMessWidth;
     private int fullMessHeight;
     private StringBuilder messageToDisplay;
@@ -61,12 +57,11 @@ public class MessCloudView extends View {
 
     //view objects
     private Paint rectPaint;
-    //    private Paint messagePaint;
     private TextPaint messagePaint;
     private Path arrowPath;
-    //    private Rect textRect;
     private StaticLayout messageLayout;
-
+    //    private Rect textRect;
+    //    private Paint messagePaint;
 
     public MessCloudView(Context context) {
         super(context);
@@ -101,6 +96,7 @@ public class MessCloudView extends View {
         TypedArray typedArray = getContext().obtainStyledAttributes(set, R.styleable.MessCloudView);
 
         cloudMessage = typedArray.getString(R.styleable.MessCloudView_cloudMessage);
+        messageAuthor = typedArray.getString(R.styleable.MessCloudView_messageAuthor);
         cloudColor = typedArray.getColor(R.styleable.MessCloudView_cloudColor, Color.BLUE);
         cloudMessageColor = typedArray.getColor(R.styleable.MessCloudView_cloudMessageColor, Color.WHITE);
         arrowHeight = typedArray.getDimensionPixelSize(R.styleable.MessCloudView_arrowSize, 15);
@@ -120,7 +116,10 @@ public class MessCloudView extends View {
         messagePaint.setColor(cloudMessageColor);
 
         //calculate the message body with message itself
+        if (messageAuthor != null && cloudMessage != null)
+            cloudMessage = !messageAuthor.equals("") ? messageAuthor + ": " + cloudMessage : cloudMessage;
         calculateMessageBody();
+
     }
 
     @Override
@@ -130,6 +129,8 @@ public class MessCloudView extends View {
         rectPaint.setColor(cloudColor);
         rectPaint.setStyle(Paint.Style.FILL);
         rectPaint.setAntiAlias(true);
+        rectPaint.setShadowLayer(SHADOW_RADIUS, 0, 1, Color.DKGRAY);
+        setLayerType(LAYER_TYPE_SOFTWARE, rectPaint);
 
         //body of cloud
         drawRoundRect(canvas);
@@ -143,33 +144,70 @@ public class MessCloudView extends View {
 
     //draw object methods
     private void drawRoundRect(Canvas canvas) {
+//        Bitmap b= BitmapFactory.decodeResource(getResources(), R.drawable.profile_roxi);
+//        Bitmap bs = Bitmap.createScaledBitmap(b,getBoxWidth(),b.getHeight(),false);
+
+
         if (currentWall == BubbleCurrentWall.LEFT) {
             //left sided cloud
-            canvas.drawRoundRect(arrowHeight, 0, getBoxWidth() + arrowHeight, getBoxHeight(), 10, 10, rectPaint);
+            // TODO: 20.04.2020 shadow
+            canvas.drawRoundRect(arrowHeight,
+                    0,
+                    getFullWidth() - SHADOW_RADIUS,
+                    getBoxHeight() - SHADOW_RADIUS*1.2f,
+                    7, 7, rectPaint);
+
+//            canvas.drawBitmap(bs,arrowHeight,0,rectPaint);
+
         } else {
             //right sided cloud
-            canvas.drawRoundRect(0, 0, getBoxWidth(), getBoxHeight(), 10, 10, rectPaint);
+            canvas.drawRoundRect(SHADOW_RADIUS,
+                    0,
+                    getBoxWidth(),
+                    getBoxHeight() - SHADOW_RADIUS*1.2f,
+                    7, 7, rectPaint);
+//            canvas.drawBitmap(bs,0,0,rectPaint);
         }
+
 
     }
 
-    private void drawArrow(Canvas canvas) {
+    private void drawArrowShadow(Canvas canvas) {
+        Path shadowPath = new Path();
         if (currentWall == BubbleCurrentWall.LEFT) {
             //left sided cloud
-            arrowPath.moveTo(arrowHeight, getBoxHeight() / 2f - arrowHeight / 1.2f);
-            arrowPath.lineTo(0, getBoxHeight() / 2);
-            arrowPath.lineTo(arrowHeight, getBoxHeight() / 2f + arrowHeight / 1.2f);
-            arrowPath.close();
+            shadowPath.moveTo(arrowHeight, getBoxHeight() / 2f - arrowHeight / 1.2f);
+            shadowPath.lineTo(SHADOW_RADIUS, getBoxHeight() / 2);
+            shadowPath.lineTo(arrowHeight, getBoxHeight() / 2f + arrowHeight / 1.2f);
         } else {
             //right sided cloud
-            arrowPath.moveTo(getBoxWidth(), getBoxHeight() / 2f - arrowHeight / 1.2f);
-            arrowPath.lineTo(getBoxWidth() + arrowHeight, getBoxHeight() / 2);
-            arrowPath.lineTo(getBoxWidth(), getBoxHeight() / 2f + arrowHeight / 1.2f);
-            arrowPath.close();
+            shadowPath.moveTo(getBoxWidth(), getBoxHeight() / 2f - arrowHeight / 1.2f);
+            shadowPath.lineTo(getBoxWidth() + arrowHeight - SHADOW_RADIUS, getBoxHeight() / 2);
+            shadowPath.lineTo(getBoxWidth(), getBoxHeight() / 2f + arrowHeight / 1.2f);
         }
+        shadowPath.close();
+        canvas.drawPath(shadowPath, rectPaint);
+    }
 
+    private void drawArrow(Canvas canvas) {
+        //draw shadow first, so we can overdraw it when it reaches cloud...
+        drawArrowShadow(canvas);
 
-        canvas.drawPath(arrowPath, rectPaint);
+        Paint arrowPaint = new Paint();
+        arrowPaint.setColor(cloudColor);
+        if (currentWall == BubbleCurrentWall.LEFT) {
+            //left sided cloud
+            arrowPath.moveTo(arrowHeight * 1.2f, getBoxHeight() / 2f - arrowHeight);
+            arrowPath.lineTo(SHADOW_RADIUS, getBoxHeight() / 2);
+            arrowPath.lineTo(arrowHeight * 1.2f, getBoxHeight() / 2f + arrowHeight);
+        } else {
+            //right sided cloud
+            arrowPath.moveTo(getBoxWidth() - (arrowHeight * 0.2f), getBoxHeight() / 2f - arrowHeight);
+            arrowPath.lineTo(getBoxWidth() + arrowHeight - SHADOW_RADIUS, getBoxHeight() / 2);
+            arrowPath.lineTo(getBoxWidth() - (arrowHeight * 0.2f), getBoxHeight() / 2f + arrowHeight);
+        }
+        arrowPath.close();
+        canvas.drawPath(arrowPath, arrowPaint);
     }
 
     private void calculateMessageBody() {
@@ -182,7 +220,6 @@ public class MessCloudView extends View {
         if (cloudMessage == null) return;
 
         for (String s : cloudMessage.split("\\s+")) {
-
             if (s.length() > 24 && totalLetterNum < 24) {
                 //the word is too long for the first line
                 messageToDisplay.append(s.substring(0, 24));
@@ -203,7 +240,7 @@ public class MessCloudView extends View {
 
             }
 
-            if (totalLetterNum == 24 || (totalLetterNum < 24 && totalLetterNum + s.length() > 24)) {
+            if (totalLetterNum == 24 || (totalLetterNum < 24 && totalLetterNum + s.length() >= 24)) {
                 //go to new line, first one is full
                 totalLetterNum = 25;
                 messageToDisplay.append("\n");
@@ -240,7 +277,8 @@ public class MessCloudView extends View {
 
         Spannable wordToSpan = new SpannableString(messageToDisplay.toString());
 //        wordToSpan.setSpan(new ForegroundColorSpan(Color.BLUE), 0, 5, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-        wordToSpan.setSpan(new StyleSpan(Typeface.BOLD), 0, 12, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        if (messageAuthor != null)
+            wordToSpan.setSpan(new StyleSpan(Typeface.BOLD), 0, messageAuthor.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 //        wordToSpan.setSpan(new BackgroundColorSpan(Color.LTGRAY), 0, 5, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
         messageLayout = new StaticLayout(wordToSpan, messagePaint, cloudMaxWidth, Layout.Alignment.ALIGN_NORMAL, 1, 0, false);
 //        messageLayout.increaseWidthTo(messageLayout.getEllipsizedWidth());
@@ -290,7 +328,6 @@ public class MessCloudView extends View {
     }
 
 
-
     @SuppressLint("ClickableViewAccessibility")
     @Override
     public boolean onTouchEvent(MotionEvent event) {
@@ -303,7 +340,10 @@ public class MessCloudView extends View {
 
     //animations
     private void playAnimationHide() {
-        Animation hideAnim = AnimationUtils.loadAnimation(getContext(), R.anim.mess_cloud_hide_anim);
+        int resAnim = currentWall == BubbleCurrentWall.LEFT
+                ? R.anim.mess_cloud_hide_left_anim
+                : R.anim.mess_cloud_hide_right_anim;
+        Animation hideAnim = AnimationUtils.loadAnimation(getContext(), resAnim);
         hideAnim.setAnimationListener(new Animation.AnimationListener() {
             @Override
             public void onAnimationStart(Animation animation) {
@@ -320,11 +360,17 @@ public class MessCloudView extends View {
 
             }
         });
+
         this.startAnimation(hideAnim);
+
     }
 
     private void playAnimationShow() {
-        Animation shownAnim = AnimationUtils.loadAnimation(getContext(), R.anim.mess_cloud_shown_anim);
+        int resAnim = currentWall == BubbleCurrentWall.LEFT
+                ? R.anim.mess_cloud_shown_left_anim
+                : R.anim.mess_cloud_shown_right_anim;
+
+        Animation shownAnim = AnimationUtils.loadAnimation(getContext(), resAnim);
         shownAnim.setAnimationListener(new Animation.AnimationListener() {
             @Override
             public void onAnimationStart(Animation animation) {
@@ -350,20 +396,25 @@ public class MessCloudView extends View {
         this.startAnimation(shownAnim);
     }
 
+
     //setters
     public void setCloudColor(int cloudColor) {
         this.cloudColor = cloudColor;
     }
 
-    public void move( int x, int y){
-        FrameLayout parent = (FrameLayout)this.getParent();
-        WindowManager.LayoutParams parentParams = (WindowManager.LayoutParams)parent.getLayoutParams();
+    public void move(int x, int y) {
+        FrameLayout parent = (FrameLayout) this.getParent();
+        WindowManager.LayoutParams parentParams = (WindowManager.LayoutParams) parent.getLayoutParams();
         parentParams.x = x;
         parentParams.y = y;
         getWindowManager().updateViewLayout(parent, parentParams);
     }
 
-    public void setCloudMessage(String cloudMessage) {
+    public void setCloudMessage(String cloudMessage, String messageAuthor) {
+        if (messageAuthor != null) {
+            cloudMessage = !messageAuthor.equals("") ? messageAuthor + ": " + cloudMessage : cloudMessage;
+        }
+        this.messageAuthor = messageAuthor;
         if (!cloudMessage.equals(this.cloudMessage)) {
             this.cloudMessage = cloudMessage;
             calculateMessageBody();
@@ -373,7 +424,7 @@ public class MessCloudView extends View {
     }
 
     private WindowManager getWindowManager() {
-            return (WindowManager)getContext().getSystemService(WINDOW_SERVICE);
+        return (WindowManager) getContext().getSystemService(WINDOW_SERVICE);
     }
 
     public void setCurrentWall(BubbleCurrentWall currentWall) {
@@ -422,11 +473,11 @@ public class MessCloudView extends View {
         return getResources().getColor(color);
     }
 
-    public int getFullWidth(){
+    public int getFullWidth() {
         return getBoxWidth() + arrowHeight;
     }
 
-    public int getFullHeight(){
+    public int getFullHeight() {
         return getBoxHeight();
     }
 
@@ -435,7 +486,6 @@ public class MessCloudView extends View {
     }
 
     private int getBoxHeight() {
-        Log.d(TAG, "fullMessHeight: " + fullMessHeight + " cloudVerticalPadding " + (cloudVerticalPadding * 2));
         return fullMessHeight + (cloudVerticalPadding * 2);
     }
 
@@ -455,6 +505,5 @@ public class MessCloudView extends View {
         LEFT,
         RIGHT
     }
-
 
 }
