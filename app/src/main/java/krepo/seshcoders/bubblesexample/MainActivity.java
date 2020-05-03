@@ -1,21 +1,25 @@
 package krepo.seshcoders.bubblesexample;
 
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
+import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Outline;
+import android.content.IntentFilter;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.provider.Settings;
+import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.ViewOutlineProvider;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -23,11 +27,9 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
-import krepo.seshcoders.bubblesexample.utils.Utils;
 import krepo.seshcoders.messengerbubbles.BubbleLayout;
 import krepo.seshcoders.messengerbubbles.BubbleStack;
 import krepo.seshcoders.messengerbubbles.BubblesManager;
@@ -42,6 +44,7 @@ public class MainActivity extends AppCompatActivity implements BubbleLayout.OnBu
 
     //consts
     private static final int PERMISSIONS_REQUEST_CODE = 1231;
+    private static final String TAG = "MainActivity";
 //    BubbleLayout bubbleView2;
 
     //views, android objects
@@ -49,6 +52,17 @@ public class MainActivity extends AppCompatActivity implements BubbleLayout.OnBu
     private BubbleStack stack = new BubbleStack();
     private Context mContext;
     private BubbleLayout bubbleView3;
+    private TextView msgBadge;
+
+
+    private static final String ENABLED_NOTIFICATION_LISTENERS = "enabled_notification_listeners";
+    private static final String ACTION_NOTIFICATION_LISTENER_SETTINGS = "android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS";
+    public static final String CHANNEL_ID = "1332";
+
+    private ImageView interceptedNotificationImageView;
+    private ImageChangeBroadcastReceiver imageChangeBroadcastReceiver;
+    private AlertDialog enableNotificationListenerAlertDialog;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,26 +70,17 @@ public class MainActivity extends AppCompatActivity implements BubbleLayout.OnBu
         setContentView(R.layout.activity_main);
         mContext = getApplicationContext();
 
-//        final MessCloudView mcv = findViewById(R.id.cloudView);
-
        final MessCloudView messCloudView = LayoutInflater
                 .from(MainActivity.this)
                 .inflate(R.layout.component_bubble_cloud, null, false)
                 .findViewById(R.id.cloudView);
-//        if (messCloudView.getParent()!=null){
-//            ViewGroup viewGroup = (ViewGroup)messCloudView.getParent();
-//            viewGroup.removeView(messCloudView);
-//        }
-//        this.addContentView(messCloudView, messCloudView.getLayoutParams());
-//        messCloudView.setCurrentWall(LEFT);
-//        messCloudView.setCloudMessage("witaaaaaaaaaaaaaaaaaaa mikola nie istnieje",50 ,150);
+
 
         bubblesManager = new BubblesManager.Builder(mContext)
                 .setTrashLayout(R.layout.component_bubble_trash_layout)
                 .setMessageCloud(messCloudView)
                 .build();
         bubblesManager.initialize();
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) {
             Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
                     Uri.parse("package:" + getPackageName()));
@@ -85,28 +90,27 @@ public class MainActivity extends AppCompatActivity implements BubbleLayout.OnBu
             new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
                 @Override
                 public void run() {
-//                    bubbleView3.displayMessage("białorycerz: witaaaaaa on mi kota orzygal mikola nie istnieje");
-                    bubbleView3.displayMessage("26-300 dobzl ludzie","200iq");
-//                    bubbleView3.displayMessage("białorycerz: witaaaaaa");
-//                    bubbleView3.displayMessage("Mufinka Michał: Wyślij pocztą walentynkową");
+                    bubbleView3.displayMessage("nocojestbyniuuu","\uD83D\uDC9C\uD83D\uDC9C sugar daddy    2️⃣ 0️⃣ 0️⃣ 6️⃣ ✖️✖️\n");
                 }
             }, 3000);
-
-//            new ScheduledThreadPoolExecutor(1).schedule(new Runnable() {
-//                @Override
-//                public void run() {
-//                    runOnUiThread(new Runnable() {
-//                        @Override
-//                        public void run() {
-////                            Handler h = Looper()
-////                            bubbleView.displayMessage("witaaaaaaaaaaaaaaaaaaa mikola nie istnieje");
-////                            mcv.setVisibility(View.VISIBLE);
-//
-//                        }
-//                    });
-//                }
-//            }, 3, TimeUnit.SECONDS);
         }
+
+        // Here we get a reference to the image we will modify when a notification is received
+        interceptedNotificationImageView
+                = this.findViewById(R.id.intercepted_notification_logo);
+
+        // If the user did not turn the notification listener service on we prompt him to do so
+        if(!isNotificationServiceEnabled()){
+            enableNotificationListenerAlertDialog = buildNotificationServiceAlertDialog();
+            enableNotificationListenerAlertDialog.show();
+        }
+
+        // Finally we register a receiver to tell the MainActivity when a notification has been received
+        imageChangeBroadcastReceiver = new ImageChangeBroadcastReceiver();
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction("krepo.seshcoders.notificationlistenerexample");
+        registerReceiver(imageChangeBroadcastReceiver,intentFilter);
+
     }
 
     private void initializeBubbles() {
@@ -131,40 +135,23 @@ public class MainActivity extends AppCompatActivity implements BubbleLayout.OnBu
         bubbleView2.setElevation(100);
         bubbleView3.setElevation(100);
 
-        ((ImageView) bubbleView2.findViewById(R.id.avatar)).setImageResource(R.drawable.profile_blank);
-        ((ImageView) bubbleView3.findViewById(R.id.avatar)).setImageResource(R.drawable.profile_roxi);
-//        ((ImageView) bubbleView3.findViewById(R.id.avatar)).setOutlineProvider(new ViewOutlineProvider() {
-//            @Override
-//            public void getOutline(View view, Outline outline) {
-//                outline.setOval(view.getLeft(),view.getTop(),view.getRight(),view.getBottom());
-////                view.setClipToOutline(true);
-//            }
-//        });
+//        ((AvatarView) bubbleView2.findViewById(R.id.avatar)).setAvatar(R.drawable.profile_blank100);
+//        ((AvatarView) bubbleView3.findViewById(R.id.avatar)).setAvatar(R.drawable.profile_memowa100);
 
 
         bubbleView.findViewById(R.id.badge).setVisibility(View.GONE);
         bubbleView2.findViewById(R.id.badge).setVisibility(View.GONE);
 
+        msgBadge = bubbleView3.findViewById(R.id.badge);
         stack.addBubble(
-                bubbleView, bubbleView2,
-                bubbleView3);
+//                bubbleView,
+//                bubbleView2,
+                bubbleView3
+        );
 
         bubblesManager.addBubbleStack(stack, getScreenWidth(), getScreenHeight() / 2- 350);
-
-//        bubblesManager.addBubble(bubbleView, 0, getScreenHeight());
-//        bubblesManager.addBubble(bubbleView2, 0, getScreenHeight()/2);
-//        bubblesManager.addBubble(bubbleView3, 0, getScreenHeight()/2);
-//        bubblesManager.addBubbleStack(stack, 0,getScreenHeight()/2 );
-//        stack.addBubble(bubbleView);
-
-//        bubbleView.displayMessage("SKRRR SKRRRRR COS SKRRRRp");
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        bubblesManager.recycle();
-    }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -219,7 +206,99 @@ public class MainActivity extends AppCompatActivity implements BubbleLayout.OnBu
             params.addRule(RelativeLayout.ALIGN_START, R.id.avatar);
             messageBadge.setLayoutParams(params);
         }
+    }
 
+    public void setMessage(View v){
+        String author = ((EditText)findViewById(R.id.author)).getText().toString();
+        String message = ((EditText)findViewById(R.id.message)).getText().toString();
+        String msgCount = ((EditText)findViewById(R.id.msgCount)).getText().toString();
+        msgBadge.setText(msgCount);
+        bubbleView3.displayMessage(message,author);
+        Log.d(TAG, "setMessage: BEFORE"+(author+": "+message).replace(" ","$"));
+    }
+
+    public void showNotification(View v){
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
+                .setSmallIcon(R.drawable.mess_logo)
+                .setContentTitle("notification title")
+                .setContentText("notification content")
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
+        notificationManager.notify((int) System.currentTimeMillis(), builder.build());
 
     }
+
+
+    @Override
+    protected void onDestroy() {
+        bubblesManager.recycle();
+        unregisterReceiver(imageChangeBroadcastReceiver);
+        super.onDestroy();
+    }
+
+
+    private void changeInterceptedNotificationImage(int notificationCode){
+        switch(notificationCode){
+            case NotificationListenerExampleService.InterceptedNotificationCode.FACEBOOK_CODE:
+                interceptedNotificationImageView.setImageResource(R.drawable.facebook_logo);
+                break;
+            case NotificationListenerExampleService.InterceptedNotificationCode.INSTAGRAM_CODE:
+                interceptedNotificationImageView.setImageResource(R.drawable.instagram_logo);
+                break;
+            case NotificationListenerExampleService.InterceptedNotificationCode.WHATSAPP_CODE:
+                interceptedNotificationImageView.setImageResource(R.drawable.whatsapp_logo);
+                break;
+            case NotificationListenerExampleService.InterceptedNotificationCode.OTHER_NOTIFICATIONS_CODE:
+                interceptedNotificationImageView.setImageResource(R.drawable.other_notification_logo);
+                break;
+        }
+    }
+
+
+    public class ImageChangeBroadcastReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            int receivedNotificationCode = intent.getIntExtra("Notification Code",-1);
+            changeInterceptedNotificationImage(receivedNotificationCode);
+        }
+    }
+
+    private boolean isNotificationServiceEnabled(){
+        String pkgName = getPackageName();
+        final String flat = Settings.Secure.getString(getContentResolver(),
+                ENABLED_NOTIFICATION_LISTENERS);
+        if (!TextUtils.isEmpty(flat)) {
+            final String[] names = flat.split(":");
+            for (int i = 0; i < names.length; i++) {
+                final ComponentName cn = ComponentName.unflattenFromString(names[i]);
+                if (cn != null) {
+                    if (TextUtils.equals(pkgName, cn.getPackageName())) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    private AlertDialog buildNotificationServiceAlertDialog(){
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+        alertDialogBuilder.setTitle(R.string.notification_listener_service);
+        alertDialogBuilder.setMessage(R.string.notification_listener_service_explanation);
+        alertDialogBuilder.setPositiveButton(R.string.yes,
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        startActivity(new Intent(ACTION_NOTIFICATION_LISTENER_SETTINGS));
+                    }
+                });
+        alertDialogBuilder.setNegativeButton(R.string.no,
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        // If you choose to not enable the notification listener
+                        // the app. will not work as expected
+                    }
+                });
+        return(alertDialogBuilder.create());
+    }
+
 }

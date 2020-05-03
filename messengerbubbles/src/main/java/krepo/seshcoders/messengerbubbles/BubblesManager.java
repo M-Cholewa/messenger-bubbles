@@ -30,6 +30,8 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.IBinder;
 
+import androidx.core.content.ContextCompat;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -53,8 +55,10 @@ public class BubblesManager {
     private ServiceConnection bubbleServiceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
+
             BubblesService.BubblesServiceBinder binder = (BubblesService.BubblesServiceBinder) service;
             BubblesManager.this.bubblesService = binder.getService();
+//            bubblesService.startForeground()
             configureBubblesService();
             bound = true;
             for (BubbleLayout.BubblePojo bubblePojo : pendingBubbles) {
@@ -95,6 +99,8 @@ public class BubblesManager {
     }
 
     public void initialize() {
+//        Intent serviceIntent = new Intent(context, BubblesService.class);
+//        ContextCompat.startForegroundService(context,serviceIntent);
         context.bindService(new Intent(context, BubblesService.class),
                 bubbleServiceConnection,
                 Context.BIND_AUTO_CREATE);

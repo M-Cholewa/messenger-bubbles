@@ -13,5 +13,6 @@
         <attr name="cloudVerticalPadding" format="dimension"/>
         <attr name="cloudMaxWidth" format="dimension"/>
         <attr name="cloudMessageColor" format="color"/>
+        <attr name="backgroundImage" format="reference"/>
     </declare-styleable>
 </resources>

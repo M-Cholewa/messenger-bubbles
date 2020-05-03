@@ -24,6 +24,8 @@
  */
 package krepo.seshcoders.messengerbubbles;
 
+import android.app.Notification;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.graphics.PixelFormat;
@@ -40,6 +42,9 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
+import android.widget.Toast;
+
+import androidx.core.app.NotificationCompat;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -53,6 +58,35 @@ public class BubblesService extends Service {
     private WindowManager windowManager;
     private BubblesLayoutCoordinator layoutCoordinator;
     private MessCloudView messageCloud;
+
+    public BubblesService() {
+        //            Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
+//                    .setContentTitle("Example Service")
+//                    .setContentText(input)
+//                    .setSmallIcon(R.drawable.ic_android)
+//                    .setContentIntent(pendingIntent)
+//                    .build();
+//        startForeground();
+    }
+//    public static final String CHANNEL_ID = "exampleServiceChannel";
+
+//    @Override
+//    public int onStartCommand(Intent intent, int flags, int startId) {
+//        Intent stopSelf = new Intent(this, BubblesService.class);
+//        stopSelf.setAction(Intent.ACTION_STOP_SERVICE);
+//        PendingIntent pStopSelf = PendingIntent.getService(this, 0, this.stopSelf(), PendingIntent.FLAG_CANCEL_CURRENT);
+//
+//        Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
+//                    .setContentTitle("Example Service")
+//                    .setContentText("works")
+//                    .setSmallIcon(R.drawable.ic_android_black_24dp)
+//                .addAction(new Notification.Action())
+//                    .build();
+//        startForeground(1,notification);
+//
+//        return START_NOT_STICKY;
+////        return super.onStartCommand(intent, flags, startId);
+//    }
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -154,8 +188,8 @@ public class BubblesService extends Service {
                 WindowManager.LayoutParams.WRAP_CONTENT,
                 WindowManager.LayoutParams.WRAP_CONTENT,
                 WindowManager.LayoutParams.TYPE_SYSTEM_ALERT,
-                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
-//                | WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+                | WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
                 PixelFormat.TRANSLUCENT);
         params.gravity = Gravity.TOP | Gravity.START ;
         params.x = x;

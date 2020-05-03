@@ -44,6 +44,10 @@ import static krepo.seshcoders.messengerbubbles.MessCloudView.BubbleCurrentWall.
 import static krepo.seshcoders.messengerbubbles.MessCloudView.BubbleCurrentWall.RIGHT;
 
 public class BubbleLayout extends BubbleBaseLayout implements ViewTreeObserver.OnGlobalLayoutListener {
+
+    private static final int CLOUD_MESSAGE_PADDING = 10;
+    private static final int TOUCH_TIME_THRESHOLD = 150;
+
     private float initialTouchX;
     private float initialTouchY;
     private int initialX;
@@ -52,7 +56,6 @@ public class BubbleLayout extends BubbleBaseLayout implements ViewTreeObserver.O
     private OnBubbleClickListener onBubbleClickListener;
     private OnBubbleStickToWallListener onBubbleStickToWallListener;
     private OnMainBubbleActionListener onMainBubbleActionListener;
-    private static final int TOUCH_TIME_THRESHOLD = 150;
     private long lastTouchDown;
     private MoveAnimator animator;
     private int width;
@@ -289,9 +292,9 @@ public class BubbleLayout extends BubbleBaseLayout implements ViewTreeObserver.O
             cloudView.setCloudMessage(cloudMessage,messageAuthor);
             int x;
             if (currentWall == LEFT) {
-                x = this.getViewParams().x + this.getWidth() + 15;
+                x = this.getViewParams().x + this.getWidth() + CLOUD_MESSAGE_PADDING;
             } else {
-                x = getViewParams().x - cloudView.getFullWidth() - 15;
+                x = getViewParams().x - cloudView.getFullWidth() - CLOUD_MESSAGE_PADDING;
             }
 
 //            int x = width - (this.getWidth() + cloudView.getWidth());

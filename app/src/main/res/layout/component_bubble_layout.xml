@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <krepo.seshcoders.messengerbubbles.BubbleLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/bubble"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
@@ -11,18 +12,16 @@
 
         <RelativeLayout
             android:id="@+id/bubbleContainer"
-            android:layout_marginLeft="-4dp"
-            android:layout_marginRight="-4dp"
+            android:layout_marginLeft="-6dp"
+            android:layout_marginRight="-6dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content">
 
-            <ImageView
+            <krepo.seshcoders.bubblesexample.AvatarView
                 android:id="@+id/avatar"
-                android:layout_width="60dp"
-                android:layout_height="60dp"
-                android:layout_gravity="start"
-                android:scaleType="centerCrop"
-                android:src="@drawable/profile_txus" />
+                android:layout_width="65dp"
+                android:layout_height="65dp"
+                app:avatarImage="@drawable/profile_meme100"/>
 
             <TextView
                 android:id="@+id/badge"
@@ -34,9 +33,10 @@
                 android:fontFamily="sans-serif-medium"
                 android:paddingLeft="5dp"
                 android:paddingRight="5dp"
-                android:text="12"
+                android:paddingBottom="1dp"
+                android:text="8"
                 android:textColor="@android:color/white"
-                android:textSize="12sp" />
+                android:textSize="12.5sp" />
 
         </RelativeLayout>
     </RelativeLayout>
